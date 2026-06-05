@@ -274,6 +274,7 @@ Tweak `CONFIG.overdrive` (duration, fire-rate mult, meter charge rate).
 |---|---|---|
 | 2026-06-04 | 1.0 | Launch: core mechanics, 3 difficulties, OVERDRIVE, wave ramp, boss, enemy variety. |
 | 2026-06-04 | 1.0.1 | QA fixes: discrete contact damage + i-frames (was per-frame stacking); remove dead enemies + guard double-kills; faster XP flow; floor game-over score. |
+| 2026-06-04 | 1.0.2 | UI/UX fixes: hide HUD behind overlays (was bleeding through menu/level-up/pause/game-over); level-up card name/description no longer run together; taller+legible HUD bars; decluttered damage numbers. |
 
 **Last updated:** 2026-06-04
 

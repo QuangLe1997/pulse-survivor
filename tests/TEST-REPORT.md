@@ -20,7 +20,21 @@
 | T08 | Enemy variety | BOSS (~90s) + brutes (triangles) + minions (circles) | mobile | [08-boss-m.jpg](screenshots/08-boss-m.jpg) | ✅ PASS | "BOSS INCOMING", spinning boss, HP bar |
 | T09 | UI / Scoring | Game-over (hero score, best, survived, level, kills) | mobile | [09-gameover-m.jpg](screenshots/09-gameover-m.jpg) | ✅ PASS | score floored (5,829), all stats correct |
 | T10 | Responsive | Desktop menu — centered mobile-frame + letterbox | desktop | [10-menu-desktop.jpg](screenshots/10-menu-desktop.jpg) | ✅ PASS | layout strategy A confirmed |
-| T11 | Responsive | Desktop combat — game runs in letterboxed frame | desktop | [11-combat-desktop.jpg](screenshots/11-combat-desktop.jpg) | ✅ PASS | full HUD + gameplay |
+| T11 | Responsive | Desktop combat — game runs in letterboxed frame | desktop | [11-combat-desktop.jpg](screenshots/11-combat-desktop.jpg) | ✅ PASS | legible HUD bars |
+| T12 | UI | Pause dialog (settings toggles) | mobile | [12-pause-m.jpg](screenshots/12-pause-m.jpg) | ✅ PASS | clean, no HUD bleed |
+
+## UI / UX layout + color review pass
+
+Every screenshot was re-audited for *visual* breakage (not just "does the feature render"). Issues found and fixed:
+
+| Issue | Where | Fix |
+|---|---|---|
+| Upgrade card name + description rendered **inline / run-together** ("Fire Rate +22%Shoot faster") | level-up cards | `.nm`/`.ds` → `display:block`, `.meta` flex-column with gap |
+| **HUD bled through overlays** — score/timer chips, wave banner, and bottom HP/XP/OD bars showed (clipped) behind the menu, level-up, pause & game-over panels | all overlay screens | hide `#hud` via `#app.overlay-open` toggled in `show()`/`hideAll()` |
+| Bottom bars too thin, labels (8px) hard to read | in-game HUD | taller bars (15/17px), 9px labels, stronger shadow |
+| Damage-number popups overlapped into unreadable clusters | combat | smaller hit numbers (11px) + horizontal jitter; kill numbers 14px |
+
+**Color/comfort:** violet `#c77dff` + cyan/pink accents on near-black read clearly; panels use consistent glass treatment; HP=warm, XP=cyan, OVERDRIVE=violet are distinct and intuitive. Verdict: comfortable, on-theme, no harsh contrast.
 
 ## Telemetry from real-logic playthroughs (sampled, Normal difficulty)
 
@@ -39,8 +53,8 @@ A full bot run reached **game-over at ~50–56s, score ~5.8–9.1k, level 3, ~46
 3. **Game-over score shown as float** (`9,113.167`). Fixed: floor score in `gameOver()`.
 
 ## Summary
-- **Test cases:** 11 · **PASS:** 11 · **FAIL:** 0
-- **Coverage:** menu / difficulty / onboarding / HUD / core loop / shard pickup / level-up upgrades / OVERDRIVE burst / wave ramp / enemy variety (minion + ranger + brute + boss) / scoring / game-over / localStorage best / mobile + desktop.
+- **Test cases:** 12 · **PASS:** 12 · **FAIL:** 0
+- **Coverage:** menu / difficulty / onboarding / HUD / core loop / shard pickup / level-up upgrades / OVERDRIVE burst / wave ramp / enemy variety (minion + ranger + brute + boss) / scoring / pause / game-over / localStorage best / mobile + desktop + **UI/UX layout review**.
 - **Console errors:** 0
 - **DOCS.md matches code:** ✅ (CONFIG numbers, difficulty table, scoring, OVERDRIVE all synced)
 
