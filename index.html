@@ -917,13 +917,42 @@ bindSwitch('#swMusic','music'); bindSwitch('#swSfx','sfx'); bindSwitch('#swHapti
 /* ---------- Boot ---------- */
 resize(); $('#muteBtn').textContent=Audio.muted?'🔇':'🔊'; toMenu();
 
-/* DEV helpers (harmless; for test evidence only) */
+/* DEV helpers (inert unless called; used for automated test evidence
+   because headless/background tabs throttle requestAnimationFrame). */
 window._S=S;
 window._od=()=>{ S.od=CONFIG.overdrive.maxCharge; updateHUD(); };
 window._lvl=()=>{ S.xp=S.xpNeed; collectShard(); };
 window._boss=()=>{ if(!S.bossSpawned) spawnBoss(); };
 window._hurt=(n)=>{ S.player.iframe=0; hurtPlayer(n||30); };
 window._spawnN=(n)=>{ for(let i=0;i<(n||10);i++) spawnEnemy(); };
+window._pick=()=>{ const b=document.querySelector('#upgradeList .up'); if(b){ b.click(); return true; } return false; };
+/* _autoplay: drive the REAL game logic as a bot — steer toward shards,
+   dodge enemies, fire overdrive when full. Steps the same tick functions
+   the rAF loop uses, so every system (spawning, collisions, leveling,
+   overdrive, boss) runs for real. Returns a state summary. */
+window._autoplay=(frames=60, opts={})=>{
+  const dt=opts.dt||1/60; const autoPick=opts.autoPick!==false;
+  for(let i=0;i<frames;i++){
+    if(S.mode==='levelup'){ if(autoPick){ window._pick(); } else break; }
+    if(S.mode!=='playing') break;
+    const p=S.player;
+    let shard=null, sd=1e9; for(const s of S.shards){ const d=(s.x-p.x)**2+(s.y-p.y)**2; if(d<sd){ sd=d; shard=s; } }
+    let en=null, ed=1e9; for(const e of S.enemies){ const d=(e.x-p.x)**2+(e.y-p.y)**2; if(d<ed){ ed=d; en=e; } }
+    let tx=W/2, ty=H/2; if(shard){ tx=shard.x; ty=shard.y; }
+    let mx=(tx-p.x), my=(ty-p.y); { const d=Math.hypot(mx,my)||1; mx/=d; my/=d; }
+    if(en && ed < 95*95){ const dx=p.x-en.x, dy=p.y-en.y, d=Math.hypot(dx,dy)||1; mx+=dx/d*1.8; my+=dy/d*1.8; }
+    { const d=Math.hypot(mx,my)||1; mx/=d; my/=d; }
+    const spd=CONFIG.player.speed*p.speedMul;
+    p.x=Math.max(p.radius,Math.min(W-p.radius,p.x+mx*spd*dt));
+    p.y=Math.max(p.radius,Math.min(H-p.radius,p.y+my*spd*dt));
+    if(opts.useOD!==false && S.od>=CONFIG.overdrive.maxCharge && !S.odActive) tryOverdrive();
+    tickGame(dt); tickBullets(dt);
+  }
+  drawGame(); updateHUD();
+  return JSON.stringify({mode:S.mode, time:+S.time.toFixed(1), lvl:S.level, kills:S.kills,
+    score:Math.floor(S.score), hp:S.player&&Math.ceil(S.player.hp), od:Math.floor(S.od),
+    enemies:S.enemies.length, shards:S.shards.length, bossAlive:S.bossAlive});
+};
 </script>
 </body>
 </html>
