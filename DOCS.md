@@ -10,7 +10,7 @@
 | Tính năng | Trạng thái | Ở đâu (hàm / marker / file) |
 |---|---|---|
 | Core loop (survive waves, collect shards) | ✅ | `tickGame()` |
-| Player movement (WASD / touch drag) | ✅ | `handleInput()` |
+| Player movement (WASD / floating joystick) | ✅ | `JOY`, pointer handlers, `tickGame` input |
 | Auto-fire weapon system | ✅ | `tickWeapon()` |
 | Enemy spawning & AI | ✅ | `spawnEnemy()` |
 | Shard pickup + XP bar | ✅ | `collectShard()` |
@@ -66,7 +66,7 @@ States: `menu → playing → (paused) → dying → gameover → menu`
 ## 4. Gameplay & quy tắc
 
 - **Sân chơi:** Canvas 480px (w) × full height portrait (h). Player spawns center. Enemies spawn around edges. Shards drop at kill location.
-- **Di chuyển:** Player moves with WASD (desktop) or drag-to-aim (mobile). Movement speed upgradeable. Max speed capped to prevent cheese.
+- **Di chuyển:** WASD/arrows (desktop) or a **floating joystick** (mobile): touch anywhere → a stick spawns at the touch point; push past a 9px deadzone and the player moves **full-speed** in that direction (capped radius 62px, `JOY` config). Direction-only (no chasing the finger); much easier than the old drag-to-position. Movement speed upgradeable.
 - **Chết:** HP ≤0 → game over. Enemies deal dmg on hit.
 - **Tương tác cốt lõi:**
   - **Auto-fire:** Weapon fires projectiles in direction of nearest enemy (or last aim dir). Fire rate upgradeable. Can have multiple projectiles (upgrade path).
@@ -276,6 +276,7 @@ Tweak `CONFIG.overdrive` (duration, fire-rate mult, meter charge rate).
 | 2026-06-04 | 1.0.1 | QA fixes: discrete contact damage + i-frames (was per-frame stacking); remove dead enemies + guard double-kills; faster XP flow; floor game-over score. |
 | 2026-06-04 | 1.0.2 | UI/UX fixes: hide HUD behind overlays (was bleeding through menu/level-up/pause/game-over); level-up card name/description no longer run together; taller+legible HUD bars; decluttered damage numbers. |
 | 2026-06-04 | 1.0.3 | Dialog buttons/upgrade cards overflowed the panel (~7px past the edge): `all:unset` had reset `box-sizing` to `content-box`, so `width:100%`+`padding` overshot. Re-added `box-sizing:border-box` to `.btn`/`.up`/icon buttons. |
+| 2026-06-04 | 1.1.0 | Mobile controls: replaced drag-to-position (player chased the finger) with a **floating joystick** — touch anywhere, push a direction, move full-speed. Visual stick rendered on canvas. |
 
 **Last updated:** 2026-06-04
 

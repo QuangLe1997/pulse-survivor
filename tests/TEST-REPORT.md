@@ -22,6 +22,7 @@
 | T10 | Responsive | Desktop menu — centered mobile-frame + letterbox | desktop | [10-menu-desktop.jpg](screenshots/10-menu-desktop.jpg) | ✅ PASS | layout strategy A confirmed |
 | T11 | Responsive | Desktop combat — game runs in letterboxed frame | desktop | [11-combat-desktop.jpg](screenshots/11-combat-desktop.jpg) | ✅ PASS | legible HUD bars |
 | T12 | UI | Pause dialog (settings toggles) | mobile | [12-pause-m.jpg](screenshots/12-pause-m.jpg) | ✅ PASS | clean, no HUD bleed |
+| T13 | Controls | Floating joystick — touch & push moves player | mobile | [13-joystick-m.jpg](screenshots/13-joystick-m.jpg) | ✅ PASS | push up-left → player moved dx −75 / dy −178; stick visual renders |
 
 ## UI / UX layout + color review pass
 
@@ -53,7 +54,7 @@ A full bot run reached **game-over at ~50–56s, score ~5.8–9.1k, level 3, ~46
 3. **Game-over score shown as float** (`9,113.167`). Fixed: floor score in `gameOver()`.
 
 ## Summary
-- **Test cases:** 12 · **PASS:** 12 · **FAIL:** 0
+- **Test cases:** 13 · **PASS:** 13 · **FAIL:** 0
 - **Coverage:** menu / difficulty / onboarding / HUD / core loop / shard pickup / level-up upgrades / OVERDRIVE burst / wave ramp / enemy variety (minion + ranger + brute + boss) / scoring / pause / game-over / localStorage best / mobile + desktop + **UI/UX layout review**.
 - **Console errors:** 0
 - **DOCS.md matches code:** ✅ (CONFIG numbers, difficulty table, scoring, OVERDRIVE all synced)

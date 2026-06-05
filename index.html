@@ -183,7 +183,7 @@ h1{ font-family:var(--disp); font-weight:900; text-transform:uppercase; letter-s
     <div class="panel">
       <h1 style="font-size:30px">How to play</h1>
       <div class="how">
-        <p>🕹️ <b>Move</b> with WASD / arrows, or <b>drag your thumb</b> on mobile. Your weapon <b>auto-fires</b> the nearest enemy.</p>
+        <p>🕹️ <b>Move</b> with WASD / arrows, or on mobile <b>touch anywhere & push</b> — a floating joystick steers you. Your weapon <b>auto-fires</b> the nearest enemy.</p>
         <p>💎 Kills drop <b>glowing shards</b> — grab them to fill your <b>XP</b> bar. On level-up, pick <b>1 of 3 upgrades</b>.</p>
         <p>⚡ Shards also charge the <b>OVERDRIVE</b> meter. When full, hit <b>SPACE</b> / the ⚡ button for a 5s burst: rapid fire + invincibility.</p>
         <p>👹 A <b>BOSS</b> storms in around 90s. Survive as long as you can!</p>
@@ -424,17 +424,27 @@ addEventListener('keydown', e=>{
 });
 addEventListener('keyup', e=>{ keys[e.key.toLowerCase()]=false; });
 
-let dragging=false, dragX=0, dragY=0;
+/* Floating joystick: touch anywhere → a stick appears at the touch point;
+   push in any direction to move full-speed that way (no chasing your thumb). */
+const JOY = { active:false, id:-1, ox:0, oy:0, cx:0, cy:0, dx:0, dy:0, dead:9, max:62 };
+function joyUpdate(){
+  const dx=JOY.cx-JOY.ox, dy=JOY.cy-JOY.oy, d=Math.hypot(dx,dy);
+  if(d>JOY.dead){ JOY.dx=dx/d; JOY.dy=dy/d; } else { JOY.dx=0; JOY.dy=0; }
+}
+function joyEnd(){ JOY.active=false; JOY.id=-1; JOY.dx=0; JOY.dy=0; }
 cv.addEventListener('pointerdown', e=>{
   if(S.mode!=='playing') return; Audio.ensure();
   cv.setPointerCapture(e.pointerId);
-  dragging=true; const r=cv.getBoundingClientRect(); dragX=e.clientX-r.left; dragY=e.clientY-r.top;
+  const r=cv.getBoundingClientRect();
+  JOY.active=true; JOY.id=e.pointerId;
+  JOY.ox=JOY.cx=e.clientX-r.left; JOY.oy=JOY.cy=e.clientY-r.top; JOY.dx=JOY.dy=0;
 });
 cv.addEventListener('pointermove', e=>{
-  if(!dragging) return; const r=cv.getBoundingClientRect(); dragX=e.clientX-r.left; dragY=e.clientY-r.top;
+  if(!JOY.active || e.pointerId!==JOY.id) return;
+  const r=cv.getBoundingClientRect(); JOY.cx=e.clientX-r.left; JOY.cy=e.clientY-r.top; joyUpdate();
 });
-cv.addEventListener('pointerup', e=>{ dragging=false; });
-cv.addEventListener('pointercancel', e=>{ dragging=false; });
+cv.addEventListener('pointerup', e=>{ if(e.pointerId===JOY.id) joyEnd(); });
+cv.addEventListener('pointercancel', e=>{ if(e.pointerId===JOY.id) joyEnd(); });
 
 /* ============================================================
    GAMEPLAY
@@ -451,16 +461,17 @@ function startGame(){
     enemies:[], bullets:[], ebullets:[], shards:[], particles:[], popups:[],
   });
   S.player = freshPlayer();
+  joyEnd();
   hideAll(); updateHUD(); banner('SURVIVE'); MusicEngine.start();
   last = performance.now();
 }
 
-function pauseGame(){ if(S.mode!=='playing') return; S.mode='paused'; MusicEngine.stop(); show('pause'); }
+function pauseGame(){ if(S.mode!=='playing') return; S.mode='paused'; joyEnd(); MusicEngine.stop(); show('pause'); }
 function resumeGame(){ if(S.mode!=='paused') return; S.mode='playing'; hideAll(); MusicEngine.start(); last=performance.now(); }
 function toMenu(){ S.mode='menu'; MusicEngine.stop(); $('#bestVal').textContent=S.best; show('menu'); }
 
 function gameOver(){
-  S.mode='gameover'; MusicEngine.stop(); Audio.sfx('over'); haptic([60,80,60]);
+  S.mode='gameover'; joyEnd(); MusicEngine.stop(); Audio.sfx('over'); haptic([60,80,60]);
   S.score=Math.floor(S.score);
   if(S.score>S.best){ S.best=S.score; Save.set('best',S.best); }
   $('#finalScore').textContent=fmt(S.score); $('#goBest').textContent=fmt(S.best);
@@ -530,10 +541,7 @@ function tickGame(dt){
   if(keys['s']||keys['arrowdown']) iy+=1;
   if(keys['a']||keys['arrowleft']) ix-=1;
   if(keys['d']||keys['arrowright']) ix+=1;
-  if(dragging){
-    const dx=dragX-p.x, dy=dragY-p.y, d=Math.hypot(dx,dy);
-    if(d>4){ ix=dx/d; iy=dy/d; }
-  }
+  if(JOY.active && (JOY.dx||JOY.dy)){ ix=JOY.dx; iy=JOY.dy; }   // joystick overrides → full-speed in pushed direction
   const il=Math.hypot(ix,iy); if(il>1){ ix/=il; iy/=il; }
   const spd=CONFIG.player.speed*p.speedMul;
   p.x+=ix*spd*dt; p.y+=iy*spd*dt;
@@ -839,6 +847,21 @@ function drawGame(){
   ctx.globalAlpha=1;
 
   ctx.restore();
+
+  // floating joystick (drawn in screen space, after shake restore)
+  if(JOY.active){
+    const dx=JOY.cx-JOY.ox, dy=JOY.cy-JOY.oy, d=Math.hypot(dx,dy)||1;
+    const kr=Math.min(d, JOY.max), kx=JOY.ox+dx/d*kr, ky=JOY.oy+dy/d*kr;
+    ctx.save();
+    // base ring
+    ctx.beginPath(); ctx.arc(JOY.ox,JOY.oy,JOY.max,0,7);
+    ctx.fillStyle='rgba(199,125,255,0.06)'; ctx.fill();
+    ctx.lineWidth=2; ctx.strokeStyle='rgba(199,125,255,0.35)'; ctx.stroke();
+    // knob
+    ctx.beginPath(); ctx.arc(kx,ky,20,0,7);
+    ctx.fillStyle='rgba(199,125,255,0.55)'; ctx.shadowColor='#c77dff'; ctx.shadowBlur=14; ctx.fill();
+    ctx.restore();
+  }
 }
 
 function drawPlayer(){
