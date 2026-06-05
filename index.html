@@ -240,12 +240,12 @@ const $ = s => document.querySelector(s);
    §14 CONFIG — single source of truth for all balance numbers
    ============================================================ */
 const CONFIG = {
-  player: { maxHp:100, speed:200, radius:14, iframesSec:0.6 },
+  player: { maxHp:100, speed:200, radius:14, iframesSec:0.7 },
   weapon: { baseDamage:8, fireRate:0.32, projectileSpeed:420, projRadius:5, projLife:1.1 },
-  shard:  { xpPerShard:1, overdrivePerShard:7, basePickup:46, magnetSpeed:520, life:14 },
+  shard:  { xpPerShard:1, overdrivePerShard:7, basePickup:64, magnetSpeed:540, life:14 },
   overdrive: { maxCharge:100, durationSec:5, fireRateMult:3, dmgMult:1.4 },
-  minion: { hp:26, speed:78, dmg:9, radius:13, dropRate:0.34, score:1 },
-  ranger: { hp:34, speed:52, dmg:7, radius:13, fireRate:2.2, projSpeed:170, dropRate:0.55, score:2, introTime:25 },
+  minion: { hp:26, speed:78, dmg:9, radius:13, dropRate:0.6, score:1 },
+  ranger: { hp:34, speed:52, dmg:7, radius:13, fireRate:2.2, projSpeed:170, dropRate:0.7, score:2, introTime:25 },
   brute:  { hp:120, speed:46, dmg:18, radius:22, dropRate:1, score:5, introTime:55 },
   boss:   { hp:1400, speed:34, dmg:26, radius:46, spawnTime:90, sprayEvery:2.4 },
   difficulties: {
@@ -253,8 +253,8 @@ const CONFIG = {
     normal: { spawnInterval:0.95, enemyHpMult:1.0,  speedMult:1.0,  dmgMult:1.0, xpMult:1.0 },
     hard:   { spawnInterval:0.68, enemyHpMult:1.45, speedMult:1.18, dmgMult:1.35, xpMult:1.15 },
   },
-  // XP needed to reach next level (index = current level-1); after array → grows
-  xpCurve: (lv) => Math.round(5 + lv*4 + lv*lv*0.6),
+  // XP needed to reach next level — gentle early so the power fantasy kicks in fast
+  xpCurve: (lv) => Math.round(4 + lv*3 + lv*lv*0.5),
   ramp: { everySec:28, spawnMul:0.9, hpMul:1.08, max:9 },
 };
 
@@ -561,8 +561,8 @@ function tickGame(dt){
       e.fireAcc+=dt;
       if(e.fireAcc>=CONFIG.boss.sprayEvery){ e.fireAcc=0; bossSpray(e); }
     }
-    // touch damage
-    if(d < e.radius+p.radius){ hurtPlayer(e.dmg*S.dcfg.dmgMult*dt*2.2); }
+    // touch damage — discrete hit gated by i-frames (no per-frame stacking)
+    if(d < e.radius+p.radius){ hurtPlayer(e.dmg*S.dcfg.dmgMult); }
   }
 
   // ---- enemy bullets ----
@@ -743,11 +743,10 @@ function hurtPlayer(amount){
   const p=S.player;
   if(p.iframe>0 || S.odActive) return;
   p.hp-=amount;
-  if(amount>2){ // only react to meaningful hits
-    p.iframe=CONFIG.player.iframesSec;
-    Audio.sfx('hurt'); haptic(40); shakeIt(0.25,10); flashScreen(0.25,'#ff5a6a');
-    spawnParticles(p.x,p.y,'#ff5a6a',6,140);
-  }
+  p.iframe=CONFIG.player.iframesSec;
+  Audio.sfx('hurt'); haptic(40); shakeIt(0.25,10); flashScreen(0.25,'#ff5a6a');
+  spawnParticles(p.x,p.y,'#ff5a6a',6,140);
+  popup(p.x,p.y-18,'-'+Math.round(amount),'#ff7a8a');
 }
 
 /* ---------- juice helpers ---------- */

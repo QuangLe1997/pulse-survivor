@@ -95,11 +95,13 @@ States: `menu → playing → (paused) → dying → gameover → menu`
 
 ## 6. CẤU TRÚC ĐỘ KHÓ
 
-| Mode | Spawn interval | Enemy HP | Enemy speed | Damage/hit | XP reward |
+| Mode | Spawn interval | Enemy HP mult | Enemy speed mult | Damage mult | OD/XP mult |
 |---|---|---|---|---|---|
-| Easy | 1.2s | 20 | 0.8× | 5 per hit | ×1 |
-| Normal | 0.9s | 30 | 1.0× | 8 per hit | ×1 |
-| Hard | 0.65s | 45 | 1.25× | 12 per hit | ×1.2 |
+| Easy | 1.25s | 0.8× | 0.85× | 0.7× | ×1.0 |
+| Normal | 0.95s | 1.0× | 1.0× | 1.0× | ×1.0 |
+| Hard | 0.68s | 1.45× | 1.18× | 1.35× | ×1.15 |
+
+> Contact damage is a **discrete hit** (full `enemy.dmg × dmgMult`) that triggers **0.7s i-frames**, so standing in a crowd costs ~one hit per 0.7s — not per-frame stacking.
 
 **Ramp formula:** Every 30 seconds of gameplay, difficulty increases:
 - Spawn interval: `interval * 0.92` (faster spawning).
@@ -213,32 +215,35 @@ Players pick 1 of 3 randomly-chosen upgrades:
 
 ```javascript
 const CONFIG = {
-  // Player
-  player: { maxHp:100, speed:200, sprintMult:1.3, sprintDuration:0.5 },
-  
+  // Player — contact damage is a DISCRETE hit gated by i-frames (no per-frame stacking)
+  player: { maxHp:100, speed:200, radius:14, iframesSec:0.7 },
+
   // Weapon
-  weapon: { baseDamage:8, fireRate:0.15, projectileSpeed:350 },
-  
-  // Shards
-  shard: { xpPerShard:1, overdrivePerShard:15, pickupRadius:40 },
-  
+  weapon: { baseDamage:8, fireRate:0.32, projectileSpeed:420, projRadius:5, projLife:1.1 },
+
+  // Shards — each = +1 XP and +7 overdrive; magnet radius 64px (upgradeable)
+  shard: { xpPerShard:1, overdrivePerShard:7, basePickup:64, magnetSpeed:540, life:14 },
+
   // OVERDRIVE
-  overdrive: { maxCharge:100, durationSec:5, fireRateMult:3, invincibilityPerHit:0.3 },
-  
-  // Enemies
-  minion: { hp:30, speed:80, dmg:5, spawnChance:0.7, dropRate:0.2 },
-  ranger: { hp:40, speed:60, dmg:7, fireRate:2, spawnChance:0.3, dropRate:0.4 },
-  boss: { hp:180, speed:50, dmg:10, spawnTime:90 },
-  
+  overdrive: { maxCharge:100, durationSec:5, fireRateMult:3, dmgMult:1.4 },
+
+  // Enemies (base; scaled by difficulty mult + wave ramp)
+  minion: { hp:26, speed:78, dmg:9,  radius:13, dropRate:0.6, score:1 },
+  ranger: { hp:34, speed:52, dmg:7,  radius:13, fireRate:2.2, dropRate:0.7, score:2, introTime:25 },
+  brute:  { hp:120, speed:46, dmg:18, radius:22, dropRate:1,  score:5, introTime:55 },
+  boss:   { hp:1400, speed:34, dmg:26, radius:46, spawnTime:90, sprayEvery:2.4 },
+
   // Difficulty
   difficulties: {
-    easy:   { spawnInterval:1.2, enemyHpMult:0.8, speedMult:0.8, dmgMult:0.6 },
-    normal: { spawnInterval:0.9, enemyHpMult:1.0, speedMult:1.0, dmgMult:1.0 },
-    hard:   { spawnInterval:0.65, enemyHpMult:1.5, speedMult:1.2, dmgMult:1.4 },
+    easy:   { spawnInterval:1.25, enemyHpMult:0.8,  speedMult:0.85, dmgMult:0.7,  xpMult:1.0 },
+    normal: { spawnInterval:0.95, enemyHpMult:1.0,  speedMult:1.0,  dmgMult:1.0,  xpMult:1.0 },
+    hard:   { spawnInterval:0.68, enemyHpMult:1.45, speedMult:1.18, dmgMult:1.35, xpMult:1.15 },
   },
-  
-  // XP for level-up
-  xpPerLevel: [10, 20, 35, 55, 80, 110, 150],  // each level needs this much XP
+
+  // XP to reach next level (gentle early): round(4 + lv*3 + lv*lv*0.5)
+  // → L2:8  L3:12  L4:17  L5:24  L6:31  ...
+  xpCurve: (lv) => Math.round(4 + lv*3 + lv*lv*0.5),
+  ramp: { everySec:28, spawnMul:0.9, hpMul:1.08, max:9 },  // every 28s: faster spawn + tougher
 };
 ```
 
