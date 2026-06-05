@@ -272,6 +272,11 @@ Tweak `CONFIG.overdrive` (duration, fire-rate mult, meter charge rate).
 
 | Date | Version | Change |
 |---|---|---|
-| 2026-06-04 | 1.0 | Launch: core mechanics, 3 difficulties, OVERDRIVE, wave ramp. |
+| 2026-06-04 | 1.0 | Launch: core mechanics, 3 difficulties, OVERDRIVE, wave ramp, boss, enemy variety. |
+| 2026-06-04 | 1.0.1 | QA fixes: discrete contact damage + i-frames (was per-frame stacking); remove dead enemies + guard double-kills; faster XP flow; floor game-over score. |
 
 **Last updated:** 2026-06-04
+
+## 17. Testing
+
+QA evidence in [`tests/TEST-REPORT.md`](tests/TEST-REPORT.md) — 11/11 PASS, 0 console errors, screenshots in `tests/screenshots/`. Captured via real-logic playthroughs (an inert `window._autoplay` bot drives the actual tick functions) since headless/background tabs throttle `requestAnimationFrame`.

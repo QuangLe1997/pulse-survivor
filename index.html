@@ -459,6 +459,7 @@ function toMenu(){ S.mode='menu'; MusicEngine.stop(); $('#bestVal').textContent=
 
 function gameOver(){
   S.mode='gameover'; MusicEngine.stop(); Audio.sfx('over'); haptic([60,80,60]);
+  S.score=Math.floor(S.score);
   if(S.score>S.best){ S.best=S.score; Save.set('best',S.best); }
   $('#finalScore').textContent=fmt(S.score); $('#goBest').textContent=fmt(S.best);
   $('#goTime').textContent=mmss(S.time); $('#goLevel').textContent=S.level; $('#goKills').textContent=S.kills;
