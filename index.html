@@ -64,7 +64,7 @@ canvas{ position:absolute; inset:0; width:100%; height:100%; display:block; touc
 #score small{ display:block; font-family:var(--body); font-weight:500; font-size:9px; color:var(--mut); letter-spacing:.18em; }
 #timer{ font-size:15px; }
 .icons{ display:flex; gap:8px; pointer-events:auto; }
-.icons button{ all:unset; cursor:pointer; width:38px; height:38px; display:grid; place-items:center;
+.icons button{ all:unset; box-sizing:border-box; cursor:pointer; width:38px; height:38px; display:grid; place-items:center;
   border:1px solid var(--line); border-radius:12px; background:rgba(20,22,34,.7); backdrop-filter:blur(14px); font-size:17px; }
 
 /* ---------- BARS (bottom HUD) ---------- */
@@ -106,7 +106,7 @@ h1{ font-family:var(--disp); font-weight:900; text-transform:uppercase; letter-s
   font-size:clamp(30px,9vw,48px); line-height:1; margin-bottom:6px;
   background:linear-gradient(95deg,#ffd24a,var(--accent),#56d4ff,#ff5a8a); -webkit-background-clip:text; background-clip:text; color:transparent; }
 .kick{ font-family:var(--disp); font-weight:700; text-transform:uppercase; letter-spacing:.3em; font-size:11px; color:var(--mut); margin-bottom:18px; }
-.btn{ all:unset; cursor:pointer; display:block; width:100%; margin:10px 0; padding:15px; text-align:center;
+.btn{ all:unset; box-sizing:border-box; cursor:pointer; display:block; width:100%; margin:10px 0; padding:15px; text-align:center;
   font-family:var(--disp); font-weight:800; text-transform:uppercase; letter-spacing:.12em; font-size:15px; border-radius:14px;
   background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 85%,#fff 0%),color-mix(in srgb,var(--accent) 70%,#000 18%));
   color:#190c25; box-shadow:0 10px 26px -10px color-mix(in srgb,var(--accent) 70%,transparent); }
@@ -127,7 +127,7 @@ h1{ font-family:var(--disp); font-weight:900; text-transform:uppercase; letter-s
 /* LEVEL-UP cards */
 #levelup .panel{ max-width:380px; }
 .upgrades{ display:flex; flex-direction:column; gap:10px; margin-top:14px; }
-.up{ all:unset; cursor:pointer; display:flex; align-items:center; gap:12px; padding:14px; border-radius:14px;
+.up{ all:unset; box-sizing:border-box; width:100%; cursor:pointer; display:flex; align-items:center; gap:12px; padding:14px; border-radius:14px;
   border:1px solid var(--line); background:rgba(255,255,255,.04); text-align:left; transition:.12s; }
 .up:hover,.up:active{ border-color:var(--accent); background:color-mix(in srgb,var(--accent) 12%,transparent); transform:translateY(-1px); }
 .up .ico{ font-size:26px; width:40px; text-align:center; flex:0 0 auto; }
