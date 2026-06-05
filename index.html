@@ -645,7 +645,7 @@ function tickBullets(dt){
   for(const b of S.bullets){
     b.x+=b.vx*dt; b.y+=b.vy*dt; b.t+=dt;
     for(const e of S.enemies){
-      if(b.hitset.has(e)) continue;
+      if(e.dead || b.hitset.has(e)) continue;
       const dx=e.x-b.x, dy=e.y-b.y, rr=(e.radius+b.r);
       if(dx*dx+dy*dy < rr*rr){
         damageEnemy(e, b.dmg, b.x, b.y);
@@ -655,9 +655,12 @@ function tickBullets(dt){
     }
   }
   S.bullets=S.bullets.filter(b=>!b.dead && b.t<CONFIG.weapon.projLife && b.x>-20 && b.x<W+20 && b.y>-20 && b.y<H+20);
+  // remove dead enemies so corpses don't render / chase / re-trigger kills
+  S.enemies=S.enemies.filter(e=>!e.dead);
 }
 
 function damageEnemy(e, dmg, hx, hy){
+  if(e.dead) return;
   e.hp-=dmg; e.flash=0.08;
   spawnParticles(hx,hy,'#ffffff',3,120);
   Audio.sfx('hit');
